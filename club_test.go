@@ -19,18 +19,20 @@ func TestClub(t *testing.T) {
 			name:     "club not found",
 			clubName: "KMA",
 			clubs: Clubs{
-				"SP":  {Name: "SP"},
-				"MID": {Name: "MID"},
-			},
+				clubs: map[string]*Club{
+					"SP":  {Name: "SP"},
+					"MID": {Name: "MID"},
+				}},
 			expectedErr: fmt.Errorf(`no club "KMA" found`),
 		},
 		{
 			name:     "club found",
 			clubName: "MID",
 			clubs: Clubs{
-				"SP":  {Name: "SP"},
-				"MID": {Name: "MID"},
-			},
+				clubs: map[string]*Club{
+					"SP":  {Name: "SP"},
+					"MID": {Name: "MID"},
+				}},
 			expected: &Club{Name: "MID"},
 		},
 	}

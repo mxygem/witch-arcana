@@ -11,15 +11,15 @@ import (
 	"github.com/tidwall/pretty"
 )
 
-func Open(loc string) (Clubs, error) {
+func Open(loc string) (*Clubs, error) {
 	dat, err := os.ReadFile(loc)
 	if err != nil {
 		return nil, fmt.Errorf("reading: %w", err)
 	}
 
-	var cs Clubs
+	cs := &Clubs{}
 	if len(dat) > 0 {
-		if err = json.Unmarshal(dat, &cs); err != nil {
+		if err = json.Unmarshal(dat, &cs.clubs); err != nil {
 			return nil, fmt.Errorf("unmarshaling: %w", err)
 		}
 	}
@@ -80,7 +80,7 @@ func (loc *Location) UnmarshalCSV(csv string) error {
 	return nil
 }
 
-func Save(loc string, cs Clubs) error {
+func Save(loc string, cs *Clubs) error {
 	b, err := json.Marshal(cs)
 	if err != nil {
 		return fmt.Errorf("marshal: %w", err)

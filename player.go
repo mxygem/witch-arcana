@@ -4,6 +4,19 @@ import (
 	"fmt"
 )
 
+// Players is a collection of players.
+type Players []*Player
+
+// Player represents a player and various data about them.
+type Player struct {
+	Name     string   `json:"name" csv:"name"`
+	Location Location `json:"location,omitempty" csv:"location"`
+	InHive   bool     `json:"in_hive,omitempty" csv:"in_hive"`
+	Level    int      `json:"level,omitempty" csv:"level,lvl"`
+	Might    int64    `json:"might,omitempty" csv:"might"`
+	Club     string   `json:"club,omitempty" csv:"club"`
+}
+
 // Player returns a given player if found.
 func (cs Clubs) Player(name string) (*Player, error) {
 	if _, p := player(cs, name); p != nil {
@@ -14,7 +27,7 @@ func (cs Clubs) Player(name string) (*Player, error) {
 }
 
 func player(cs Clubs, name string) (int, *Player) {
-	for _, club := range cs {
+	for _, club := range cs.clubs {
 		for i, p := range club.Players {
 			if p.Name != name {
 				continue
@@ -32,12 +45,12 @@ func player(cs Clubs, name string) (int, *Player) {
 
 // CreatePlayer creates a new player.
 func (cs Clubs) CreatePlayer(clubName string, newPlayer *Player) (*Player, error) {
-	c := club(cs, clubName)
+	c := club(cs.clubs, clubName)
 	if c == nil {
 		return nil, fmt.Errorf("club %q not found", clubName)
 	}
 
-	if err := createPlayer(cs[clubName], newPlayer); err != nil {
+	if err := createPlayer(cs.clubs[clubName], newPlayer); err != nil {
 		return nil, fmt.Errorf("creating player: %w", err)
 	}
 
@@ -76,7 +89,7 @@ func removePlayer(clubs Clubs, playerName string) error {
 		return fmt.Errorf("player %q does not exist", playerName)
 	}
 
-	c := club(clubs, player.Club)
+	c := club(clubs.clubs, player.Club)
 	c.Players = append(c.Players[:pos], c.Players[pos+1:]...)
 
 	return nil
@@ -119,8 +132,18 @@ func movePlayer(clubs Clubs, newClubName, playerName string) (*Player, error) {
 	return p, nil
 }
 
-func (cs Clubs) UpdatePlayer(p *Player) *Player {
-	return nil
+func (cs Clubs) UpdatePlayer(p *Player) (*Player, error) {
+	n, fp := player(cs, p.Name)
+	if n < 0 {
+		return nil, fmt.Errorf("player %q not found", p.Name)
+	}
+
+	up := updatePlayer(fp, p)
+
+	c := club(cs.clubs, p.Club)
+	c.Players[n] = up
+
+	return up, nil
 }
 
 func updatePlayer(p *Player, up *Player) *Player {
@@ -167,17 +190,4 @@ func bulkUpdatePlayers(cs Clubs, ps Players) error {
 	}
 
 	return nil
-}
-
-// move to club file when made“
-func maybeMakeClub(cs Clubs, name string) *Club {
-	c, ok := cs[name]
-	if ok {
-		return c
-	}
-
-	nc := &Club{Name: name}
-	cs[nc.Name] = nc
-
-	return nc
 }

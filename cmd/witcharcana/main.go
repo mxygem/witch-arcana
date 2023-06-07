@@ -44,8 +44,8 @@ func main() {
 	}
 
 	if shouldLog {
-		fmt.Printf("found %d clubs\n", len(cs))
-		for k, v := range cs {
+		fmt.Printf("found %d clubs\n", len(cs.All()))
+		for k, v := range cs.All() {
 			fmt.Printf("club %q with %d players\n", k, len(v.Players))
 			for i, p := range v.Players {
 				fmt.Printf("\tp %d:%+v\n", i, p)
@@ -57,7 +57,7 @@ func main() {
 	case "club":
 		c := wa.Club{Name: clubName, Location: wa.Location{X: x, Y: y}}
 
-		if err := manageClub(args[0], cs, c); err != nil {
+		if err := manageClub(args[0], cs.All(), c); err != nil {
 			log.Fatalf("managing club: %v", err)
 		}
 	case "player":
@@ -69,7 +69,7 @@ func main() {
 
 			if cs == nil {
 				log.Println("found nil club data")
-				cs = wa.Clubs{}
+				cs = &wa.Clubs{}
 			}
 
 			if err := cs.BulkUpdatePlayers(ps); err != nil {
@@ -99,7 +99,7 @@ func bulkUpdatePlayers(cs wa.Clubs, ps wa.Players) {
 	}
 
 	for _, p := range ps {
-		c, ok := cs[p.Club]
+		c, ok := cs.All()[p.Club]
 		if !ok {
 			if shouldLog {
 				log.Printf("adding new club: %q\n", p.Club)
@@ -107,7 +107,7 @@ func bulkUpdatePlayers(cs wa.Clubs, ps wa.Players) {
 			}
 
 			nc := &wa.Club{Name: p.Club, Players: wa.Players{p}}
-			cs[nc.Name] = nc
+			cs.All()[nc.Name] = nc
 
 			continue
 		}
@@ -176,7 +176,8 @@ func updatePlayerClubKnown(c *wa.Club, up *wa.Player) {
 	}
 }
 
-func sortedClubIDs(cs wa.Clubs) []string {
+// TODO: Move to clubs.go
+func sortedClubIDs(cs map[string]*wa.Club) []string {
 	ids := make([]string, 0, len(cs))
 	for _, c := range cs {
 		ids = append(ids, c.Name)
@@ -185,7 +186,7 @@ func sortedClubIDs(cs wa.Clubs) []string {
 	return sort.StringSlice(ids)
 }
 
-func manageClub(action string, cs wa.Clubs, c wa.Club) error {
+func manageClub(action string, cs map[string]*wa.Club, c wa.Club) error {
 	switch action {
 	case "get":
 		fh, err := getClub(cs, c)
@@ -214,8 +215,8 @@ func manageClub(action string, cs wa.Clubs, c wa.Club) error {
 	return nil
 }
 
-func getClub(cd wa.Clubs, c wa.Club) (*wa.Club, error) {
-	fh, ok := cd[c.Name]
+func getClub(cs map[string]*wa.Club, c wa.Club) (*wa.Club, error) {
+	fh, ok := cs[c.Name]
 	if !ok {
 		return nil, fmt.Errorf("club %q not found", c.Name)
 	}
@@ -226,7 +227,7 @@ func getClub(cd wa.Clubs, c wa.Club) (*wa.Club, error) {
 	return fh, nil
 }
 
-func addClub(cs wa.Clubs, c wa.Club) error {
+func addClub(cs map[string]*wa.Club, c wa.Club) error {
 	if _, ok := cs[c.Name]; ok {
 		return fmt.Errorf("club %q already exists", c.Name)
 	}
@@ -236,7 +237,7 @@ func addClub(cs wa.Clubs, c wa.Club) error {
 	return nil
 }
 
-func updateClub(cs wa.Clubs, c wa.Club) error {
+func updateClub(cs map[string]*wa.Club, c wa.Club) error {
 	club, ok := cs[c.Name]
 	if !ok {
 		return fmt.Errorf("could not find club: %q", c.Name)
@@ -248,7 +249,7 @@ func updateClub(cs wa.Clubs, c wa.Club) error {
 	return nil
 }
 
-func removeClub(cs wa.Clubs, c wa.Club) error {
+func removeClub(cs map[string]*wa.Club, c wa.Club) error {
 	if _, ok := cs[c.Name]; !ok {
 		return fmt.Errorf("cannot remove nonexistent club: %q", c.Name)
 	}
@@ -258,10 +259,10 @@ func removeClub(cs wa.Clubs, c wa.Club) error {
 	return nil
 }
 
-func managePlayer(action string, cs wa.Clubs, cName, nCName string, p *wa.Player) error {
+func managePlayer(action string, cs *wa.Clubs, cName, nCName string, p *wa.Player) error {
 	switch action {
 	case "get":
-		fp, err := getPlayer(cs, cName, p)
+		fp, err := getPlayer(cs.All(), cName, p)
 		if err != nil {
 			return fmt.Errorf("getting player: %w", err)
 		}
@@ -269,19 +270,19 @@ func managePlayer(action string, cs wa.Clubs, cName, nCName string, p *wa.Player
 			return fmt.Errorf("printing found player: %w", err)
 		}
 	case "add":
-		if err := addPlayer(cs, cName, p); err != nil {
+		if err := addPlayer(cs.All(), cName, p); err != nil {
 			return fmt.Errorf("adding player: %w", err)
 		}
 	case "update":
-		if err := updatePlayer(cs, cName, p); err != nil {
+		if err := updatePlayer(cs.All(), cName, p); err != nil {
 			return fmt.Errorf("adding player: %w", err)
 		}
 	case "remove":
-		if err := removePlayer(cs, cName, p); err != nil {
+		if err := removePlayer(cs.All(), cName, p); err != nil {
 			return fmt.Errorf("removing player: %w", err)
 		}
 	case "move":
-		if err := movePlayer(cs, cName, nCName, p); err != nil {
+		if err := movePlayer(cs.All(), cName, nCName, p); err != nil {
 			return fmt.Errorf("moving player: %w", err)
 		}
 	default:
@@ -291,7 +292,7 @@ func managePlayer(action string, cs wa.Clubs, cName, nCName string, p *wa.Player
 	return nil
 }
 
-func getPlayer(cd wa.Clubs, cName string, p *wa.Player) (*wa.Player, error) {
+func getPlayer(cd map[string]*wa.Club, cName string, p *wa.Player) (*wa.Player, error) {
 	var fc *wa.Club
 	if cName != "" {
 		ph, err := getClub(cd, wa.Club{Name: cName})
@@ -331,7 +332,7 @@ func findPlayer(ps []*wa.Player, pName string) (int, *wa.Player) {
 	return 0, nil
 }
 
-func addPlayer(cs wa.Clubs, cName string, p *wa.Player) error {
+func addPlayer(cs map[string]*wa.Club, cName string, p *wa.Player) error {
 	fh, err := getClub(cs, wa.Club{Name: cName})
 	if err != nil {
 		return fmt.Errorf("club %q not found", cName)
@@ -347,7 +348,7 @@ func addPlayer(cs wa.Clubs, cName string, p *wa.Player) error {
 	return nil
 }
 
-func updatePlayer(cs wa.Clubs, cName string, p *wa.Player) error {
+func updatePlayer(cs map[string]*wa.Club, cName string, p *wa.Player) error {
 	fp, err := getPlayer(cs, cName, p)
 	if err != nil {
 		return fmt.Errorf("getting player: %w", err)
@@ -361,7 +362,7 @@ func updatePlayer(cs wa.Clubs, cName string, p *wa.Player) error {
 	return nil
 }
 
-func removePlayer(cs wa.Clubs, cName string, p *wa.Player) error {
+func removePlayer(cs map[string]*wa.Club, cName string, p *wa.Player) error {
 	c, err := getClub(cs, wa.Club{Name: cName})
 	if err != nil {
 		return fmt.Errorf("club %q not found", cName)
@@ -377,7 +378,7 @@ func removePlayer(cs wa.Clubs, cName string, p *wa.Player) error {
 	return nil
 }
 
-func movePlayer(cs wa.Clubs, cName, nCName string, p *wa.Player) error {
+func movePlayer(cs map[string]*wa.Club, cName, nCName string, p *wa.Player) error {
 	oc, err := getClub(cs, wa.Club{Name: cName})
 	if err != nil {
 		return fmt.Errorf("original club %q not found", cName)
