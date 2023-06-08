@@ -93,7 +93,12 @@ func createClub(cs *Clubs, c *Club) error {
 }
 
 func (cs *Clubs) UpdateClub(uc *Club) (*Club, error) {
-	return updateClub(cs, uc)
+	c, err := updateClub(cs, uc)
+	if err != nil {
+		return nil, fmt.Errorf("updating club: %w", err)
+	}
+
+	return c, nil
 }
 
 func updateClub(cs *Clubs, uc *Club) (*Club, error) {
@@ -125,10 +130,25 @@ func updateClub(cs *Clubs, uc *Club) (*Club, error) {
 }
 
 func (cs *Clubs) RemoveClub(name string) error {
+	if err := removeClub(cs, name); err != nil {
+		return fmt.Errorf("removing club: %w", err)
+	}
+
 	return nil
 }
 
 func removeClub(cs *Clubs, name string) error {
+	if name == "" {
+		return fmt.Errorf("club name required")
+	}
+
+	c := club(cs.clubs, name)
+	if c == nil {
+		return fmt.Errorf("no club %q found", name)
+	}
+
+	delete(cs.clubs, name)
+
 	return nil
 }
 

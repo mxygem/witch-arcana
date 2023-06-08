@@ -135,7 +135,7 @@ func TestCsCreateClub(t *testing.T) {
 			},
 			expected: &Clubs{
 				clubs: map[string]*Club{
-					"CS":  {Name: "CS", Location: &Location{X: 123, Y: 45}},
+					"CS":  {Name: "CS", Location: &Location{X: 123, Y: 456}},
 					"MID": {Name: "MID", Players: []*Player{{Name: "Menace"}}},
 				},
 			},
@@ -225,17 +225,17 @@ func TestCsUpdateClub(t *testing.T) {
 		{
 			name:        "no club name in updated info",
 			updated:     &Club{Location: &Location{X: 321, Y: 876}},
-			expectedErr: fmt.Errorf("updated club information must contain a name"),
+			expectedErr: fmt.Errorf("updating club: updated club information must contain a name"),
 		},
 		{
 			name:        "invalid x coordinate",
 			updated:     &Club{Name: "404", Location: &Location{X: 0, Y: 876}},
-			expectedErr: fmt.Errorf("no location values can be zero. got x: 0 y: 876"),
+			expectedErr: fmt.Errorf("updating club: no location values can be zero. got x: 0 y: 876"),
 		},
 		{
 			name:        "invalid y coordinate",
 			updated:     &Club{Name: "404", Location: &Location{X: 123, Y: 0}},
-			expectedErr: fmt.Errorf("no location values can be zero. got x: 123 y: 0"),
+			expectedErr: fmt.Errorf("updating club: no location values can be zero. got x: 123 y: 0"),
 		},
 		{
 			name:    "club doesn't exist",
@@ -246,7 +246,7 @@ func TestCsUpdateClub(t *testing.T) {
 					"MID": {Name: "MID", Players: []*Player{{Name: "Menace"}}},
 				},
 			},
-			expectedErr: fmt.Errorf(`no club "DYR" found`),
+			expectedErr: fmt.Errorf(`updating club: no club "DYR" found`),
 		},
 		{
 			name:    "location added",
@@ -435,6 +435,122 @@ func TestUpdateClub(t *testing.T) {
 			if tc.expectedErr != nil {
 				assert.EqualError(t, err, tc.expectedErr.Error())
 			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestCsRemoveClub(t *testing.T) {
+	testCases := []struct {
+		name        string
+		clubName    string
+		clubs       *Clubs
+		expected    *Clubs
+		expectedErr error
+	}{
+		{
+			name:     "club not found",
+			clubName: "CCC",
+			clubs: &Clubs{
+				clubs: map[string]*Club{
+					"SP": {Name: "SP", Location: &Location{X: 246, Y: 135}},
+				},
+			},
+			expectedErr: fmt.Errorf(`removing club: no club "CCC" found`),
+		},
+		{
+			name:     "successful delete",
+			clubName: "CCC",
+			clubs: &Clubs{
+				clubs: map[string]*Club{
+					"SP":  {Name: "SP", Location: &Location{X: 246, Y: 135}},
+					"CCC": {Name: "CCC", Location: &Location{X: 246, Y: 135}, Players: []*Player{{Name: "foo"}}},
+				},
+			},
+			expected: &Clubs{
+				clubs: map[string]*Club{
+					"SP": {Name: "SP", Location: &Location{X: 246, Y: 135}},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			cs := *tc.clubs
+
+			err := tc.clubs.RemoveClub(tc.clubName)
+
+			if tc.expectedErr != nil {
+				// ensure original data is not changed on err
+				assert.Equal(t, &cs, tc.clubs)
+				assert.EqualError(t, err, tc.expectedErr.Error())
+			} else {
+				assert.Equal(t, tc.expected, tc.clubs)
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestRemoveClub(t *testing.T) {
+	testCases := []struct {
+		name        string
+		clubName    string
+		clubs       *Clubs
+		expected    *Clubs
+		expectedErr error
+	}{
+		{
+			name:     "no name provided",
+			clubName: "",
+			clubs: &Clubs{
+				clubs: map[string]*Club{
+					"SP": {Name: "SP", Location: &Location{X: 246, Y: 135}},
+				},
+			},
+			expectedErr: fmt.Errorf("club name required"),
+		},
+		{
+			name:     "club not found",
+			clubName: "CCC",
+			clubs: &Clubs{
+				clubs: map[string]*Club{
+					"SP": {Name: "SP", Location: &Location{X: 246, Y: 135}},
+				},
+			},
+			expectedErr: fmt.Errorf(`no club "CCC" found`),
+		},
+		{
+			name:     "successful delete",
+			clubName: "CCC",
+			clubs: &Clubs{
+				clubs: map[string]*Club{
+					"SP":  {Name: "SP", Location: &Location{X: 246, Y: 135}},
+					"CCC": {Name: "CCC", Location: &Location{X: 246, Y: 135}, Players: []*Player{{Name: "foo"}}},
+				},
+			},
+			expected: &Clubs{
+				clubs: map[string]*Club{
+					"SP": {Name: "SP", Location: &Location{X: 246, Y: 135}},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			cs := *tc.clubs
+
+			err := removeClub(tc.clubs, tc.clubName)
+
+			if tc.expectedErr != nil {
+				// ensure original data is not changed on err
+				assert.Equal(t, &cs, tc.clubs)
+				assert.EqualError(t, err, tc.expectedErr.Error())
+			} else {
+				assert.Equal(t, tc.expected, tc.clubs)
 				assert.NoError(t, err)
 			}
 		})
