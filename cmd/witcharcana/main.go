@@ -65,6 +65,7 @@ func main() {
 			wa.Print(d)
 		case "add":
 			c := wa.NewClub(clubName, x, y)
+
 			if err := cs.CreateClub(c); err != nil {
 				log.Fatalf("creating club: %v", err)
 			}
@@ -93,7 +94,7 @@ func main() {
 			}
 
 			print(gp)
-		case "create":
+		case "add":
 			np, err := cs.CreatePlayer(p.Club, p)
 			if err != nil {
 				log.Fatalf("creating player: %v", err)
@@ -111,10 +112,6 @@ func main() {
 					log.Fatalf("bulk updating players: %v", err)
 				}
 				break
-			}
-
-			if newClubName != "" {
-				p.Club = newClubName
 			}
 
 			up, err := cs.UpdatePlayer(p)
@@ -142,7 +139,7 @@ func main() {
 		log.Fatalf("unknown resource: %q", resource)
 	}
 
-	for _, a := range []string{"create", "update", "remove", "move"} {
+	for _, a := range []string{"add", "update", "remove", "move"} {
 		if action != a {
 			continue
 		}
@@ -158,8 +155,7 @@ func print(d any) {
 }
 
 func save(loc string, cs *wa.Clubs) {
-	// todo: only save on create/update/remove
-	if err := wa.Save(loc, cs); err != nil {
+	if err := wa.Save(loc, cs.All()); err != nil {
 		log.Fatalf("saving data: %v", err)
 	}
 }

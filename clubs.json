@@ -1,0 +1,22 @@
+{
+  "CNT": {
+    "name": "CNT",
+    "location": {
+      "x": 123,
+      "y": 456
+    }
+  },
+  "DYR": {
+    "name": "DYR",
+    "location": {
+      "x": 123,
+      "y": 456
+    }
+  },
+  "FOO": {
+    "name": "FOO"
+  },
+  "MID": {
+    "name": "MID"
+  }
+}

@@ -68,7 +68,7 @@ func (loc *Location) UnmarshalCSV(csv string) error {
 	return nil
 }
 
-func Save(loc string, cs *Clubs) error {
+func Save(loc string, cs map[string]*Club) error {
 	b, err := json.Marshal(cs)
 	if err != nil {
 		return fmt.Errorf("marshal: %w", err)

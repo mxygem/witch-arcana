@@ -7,8 +7,9 @@ import (
 
 // Clubs is a key value store of clubs with keys being the club's initials.
 type Clubs struct {
-	clubs map[string]*Club
-	log   bool
+	clubs   map[string]*Club
+	log     bool
+	dataLoc string
 }
 
 // type Clubs map[string]*Club
@@ -21,7 +22,10 @@ type Club struct {
 }
 
 func NewClubs(log bool) *Clubs {
-	return &Clubs{log: log}
+	return &Clubs{
+		clubs: map[string]*Club{},
+		log:   log,
+	}
 }
 
 func NewClub(name string, x, y int) *Club {
@@ -52,7 +56,11 @@ func (cs *Clubs) LoadData(filename string) error {
 		}
 	}
 
-	cs.clubs = csd.clubs
+	cs.dataLoc = filename
+
+	if csd.clubs != nil {
+		cs.clubs = csd.clubs
+	}
 
 	return nil
 }
@@ -64,6 +72,10 @@ func loadData(filename string) (*Clubs, error) {
 	}
 
 	return csd, nil
+}
+
+func (cs *Clubs) DataLocation() string {
+	return cs.dataLoc
 }
 
 func (cs *Clubs) All() map[string]*Club {

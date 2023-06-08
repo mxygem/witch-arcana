@@ -163,6 +163,17 @@ func (cs Clubs) UpdatePlayer(p *Player) (*Player, error) {
 func updatePlayer(p *Player, up *Player) *Player {
 	p.Club = ""
 
+	if p.Location == nil && (up.Location.X > 0 && up.Location.Y > 0) {
+		l := &Location{X: up.Location.X, Y: up.Location.Y}
+		p.Location = l
+	} else {
+		if p.Location.X != up.Location.X {
+			p.Location.X = up.Location.X
+		}
+		if p.Location.Y != up.Location.Y {
+			p.Location.Y = up.Location.Y
+		}
+	}
 	if up.Level != 0 && up.Level != p.Level {
 		p.Level = up.Level
 	}
