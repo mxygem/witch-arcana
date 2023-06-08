@@ -42,7 +42,7 @@ func main() {
 	resource := args[1]
 	action := args[0]
 
-	cs := wa.NewClubs(shouldLog)
+	cs := wa.NewClubs(nil, shouldLog)
 	if err := cs.LoadData(dataLoc); err != nil {
 		log.Fatalf("failed to load data: %v", err)
 	}

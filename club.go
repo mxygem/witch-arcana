@@ -10,6 +10,7 @@ type Clubs struct {
 	clubs   map[string]*Club `json:"clubs,omitempty"`
 	log     bool
 	dataLoc string
+	db      *DB
 }
 
 // type Clubs map[string]*Club
@@ -21,13 +22,16 @@ type Club struct {
 	Players  Players   `json:"players,omitempty"`
 }
 
-func NewClubs(log bool) *Clubs {
+// NewClubs returns a pointer to a new Clubs object.
+func NewClubs(db *DB, log bool) *Clubs {
 	return &Clubs{
 		clubs: map[string]*Club{},
 		log:   log,
+		db:    db,
 	}
 }
 
+// NewClub returns a pointer to a new individual club.
 func NewClub(name string, x, y int) *Club {
 	c := &Club{
 		Name: name,
@@ -40,6 +44,7 @@ func NewClub(name string, x, y int) *Club {
 	return c
 }
 
+// LoadData opens data from a given file.
 func (cs *Clubs) LoadData(filename string) error {
 	csd, err := loadData(filename)
 	if err != nil {
@@ -74,14 +79,17 @@ func loadData(filename string) (*Clubs, error) {
 	return csd, nil
 }
 
+// DataLocation returns the file location of the configured data file on disk.
 func (cs *Clubs) DataLocation() string {
 	return cs.dataLoc
 }
 
+// All returns all clubs
 func (cs *Clubs) All() map[string]*Club {
 	return cs.clubs
 }
 
+// Club returns a single club by name if found.
 func (cs *Clubs) Club(name string) (*Club, error) {
 	if c := club(cs.clubs, name); c != nil {
 		return c, nil
@@ -98,6 +106,7 @@ func club(cs map[string]*Club, name string) *Club {
 	return nil
 }
 
+// CreateClub uses the provided club information to create a new club.
 func (cs *Clubs) CreateClub(c *Club) error {
 	// todo: return newly created club
 	return createClub(cs, c)
@@ -117,6 +126,7 @@ func createClub(cs *Clubs, c *Club) error {
 	return nil
 }
 
+// UpdateClub updates a given club if found with the provided information.
 func (cs *Clubs) UpdateClub(uc *Club) (*Club, error) {
 	c, err := updateClub(cs, uc)
 	if err != nil {
@@ -154,6 +164,7 @@ func updateClub(cs *Clubs, uc *Club) (*Club, error) {
 	return c, nil
 }
 
+// RemoveClub removes a club by name and all its associated data. (including players)
 func (cs *Clubs) RemoveClub(name string) error {
 	if err := removeClub(cs, name); err != nil {
 		return fmt.Errorf("removing club: %w", err)

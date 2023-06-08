@@ -10,7 +10,7 @@ import (
 func TestNewClubs(t *testing.T) {
 	expected := &Clubs{log: true}
 
-	assert.Equal(t, expected, NewClubs(true))
+	assert.Equal(t, expected, NewClubs(nil, true))
 }
 
 func TestNewClub(t *testing.T) {

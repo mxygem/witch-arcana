@@ -22,7 +22,7 @@ func handleMessage(cs *wa.Clubs, m string) (any, error) {
 		return nil, fmt.Errorf(_invalidMsg)
 	}
 
-	// todo: validate these first
+	// todo: update how messages are parsed.
 	action := d[0]
 	resource := d[1]
 
@@ -34,6 +34,7 @@ func handleMessage(cs *wa.Clubs, m string) (any, error) {
 	// club
 	case resources[0]:
 		switch action {
+		// get club
 		case actions[0]:
 			fmt.Println("get club")
 			c, err := cs.Club(d[2])
@@ -47,6 +48,7 @@ func handleMessage(cs *wa.Clubs, m string) (any, error) {
 			}
 
 			return string(o), nil
+		// add club
 		case actions[1]:
 			fmt.Println("add club")
 			var x, y int
@@ -75,6 +77,7 @@ func handleMessage(cs *wa.Clubs, m string) (any, error) {
 			}
 
 			return string(o), nil
+		// update club
 		case actions[2]:
 			fmt.Println("update club")
 			var x, y int
@@ -104,6 +107,7 @@ func handleMessage(cs *wa.Clubs, m string) (any, error) {
 			}
 
 			return string(o), nil
+		// remove club
 		case actions[3]:
 			fmt.Println("remove club")
 			if err := cs.RemoveClub(d[2]); err != nil {
@@ -147,6 +151,7 @@ func handleMessage(cs *wa.Clubs, m string) (any, error) {
 		p := wa.NewPlayer(d[2], clubName, level, x, y)
 
 		switch action {
+		// get player
 		case playerActions[0]:
 			fmt.Println("get player")
 			gp, err := cs.Player(p.Name)
@@ -160,6 +165,7 @@ func handleMessage(cs *wa.Clubs, m string) (any, error) {
 			}
 
 			return string(o), nil
+		// add player
 		case playerActions[1]:
 			fmt.Println("add player")
 			np, err := cs.CreatePlayer(p.Club, p)
@@ -173,6 +179,7 @@ func handleMessage(cs *wa.Clubs, m string) (any, error) {
 			}
 
 			return string(o), nil
+		// update player
 		case playerActions[2]:
 			fmt.Println("update player")
 
@@ -187,6 +194,7 @@ func handleMessage(cs *wa.Clubs, m string) (any, error) {
 			}
 
 			return string(o), nil
+		// remove player
 		case playerActions[3]:
 			fmt.Println("remove player")
 

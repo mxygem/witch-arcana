@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -15,6 +16,9 @@ import (
 var (
 	BotToken     = flag.String("token", "", "Bot access token")
 	DataLocation = flag.String("data", "", "Location of data")
+	DBConn       = flag.String("dbconn", "", "database location")
+	DBName       = flag.String("dbname", "", "database name")
+	Debug        = flag.Bool("debug", false, "enable verbose logging")
 )
 
 func main() {
@@ -25,10 +29,21 @@ func main() {
 		log.Fatalf("creating new session: %v", err)
 	}
 
-	cs, err := loadClubs(*DataLocation)
-	if err != nil {
-		log.Fatalf("could not load data: %v", err)
+	// cs, err := loadClubs(*DataLocation)
+	// if err != nil {
+	// 	log.Fatalf("could not load data: %v", err)
+	// }
+
+	ctx := context.Background()
+	db := wa.NewDB(ctx, *DBConn, *DBName)
+	if err := db.Connect(); err != nil {
+		log.Fatalf("connecting to db: %v", err)
 	}
+	if err := db.Ping(); err != nil {
+		log.Fatalf("db unreachable: %v", err)
+	}
+
+	cs := wa.NewClubs(db, *Debug)
 
 	s.AddHandler(startUp)
 	s.AddHandler(messageHandler(cs))
@@ -45,27 +60,23 @@ func main() {
 	log.Println("Shutting down")
 }
 
+// func loadClubs(dataLoc string) (*wa.Clubs, error) {
+// 	cs := wa.NewClubs(true)
+// 	if err := cs.LoadData(dataLoc); err != nil {
+// 		return nil, fmt.Errorf("loading data: %w", err)
+// 	}
+
+// 	return cs, nil
+// }
+
 func startUp(s *discordgo.Session, r *discordgo.Ready) {
 	log.Println("Bot is up!")
 }
 
-func loadClubs(dataLoc string) (*wa.Clubs, error) {
-	cs := wa.NewClubs(true)
-	if err := cs.LoadData(dataLoc); err != nil {
-		return nil, fmt.Errorf("loading data: %w", err)
-	}
-
-	return cs, nil
-}
-
 func messageHandler(cs *wa.Clubs) func(s *discordgo.Session, m *discordgo.MessageCreate) {
 	return func(s *discordgo.Session, m *discordgo.MessageCreate) {
-		if m.Author.Bot {
-			return
-		}
-
-		if m.Content[:4] != "!wat" {
-			fmt.Printf("found message start: %q\n", m.Content[:4])
+		// filter bots or messages not intended for this one.
+		if m.Author.Bot || m.Content[:4] != "!wat" {
 			return
 		}
 
