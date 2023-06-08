@@ -17,6 +17,20 @@ type Player struct {
 	Club     string    `json:"club,omitempty" csv:"club"`
 }
 
+func NewPlayer(name, clubName string, level, x, y int) *Player {
+	p := &Player{
+		Name:  name,
+		Club:  clubName,
+		Level: level,
+	}
+
+	if x > 0 && y > 0 {
+		p.Location = &Location{X: x, Y: y}
+	}
+
+	return p
+}
+
 // Player returns a given player if found.
 func (cs Clubs) Player(name string) (*Player, error) {
 	if _, p := player(cs, name); p != nil {
