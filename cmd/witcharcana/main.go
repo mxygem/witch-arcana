@@ -49,6 +49,7 @@ func main() {
 	case "club":
 		switch args[0] {
 		case "get":
+			// todo: update printing method
 			var d any
 			if allClubs {
 				d = cs.All()
@@ -67,9 +68,11 @@ func main() {
 			}
 		case "update":
 			c := wa.NewClub(clubName, x, y)
-			if err := cs.UpdateClub(c); err != nil {
+			nc, err := cs.UpdateClub(c)
+			if err != nil {
 				log.Fatalf("updating club: %v", err)
 			}
+			wa.Print(nc)
 		case "remove":
 			if err := cs.RemoveClub(clubName); err != nil {
 				log.Fatalf("removing club: %v", err)
@@ -102,6 +105,7 @@ func main() {
 		log.Fatalf("unknown subcommand: %q", args[0])
 	}
 
+	// todo: only save on create/update/remove
 	if err := wa.Save(dataLoc, cs); err != nil {
 		log.Fatalf("saving data: %v", err)
 	}
