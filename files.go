@@ -11,7 +11,7 @@ import (
 	"github.com/tidwall/pretty"
 )
 
-func Open(loc string) (*Clubs, error) {
+func open(loc string) (*Clubs, error) {
 	dat, err := os.ReadFile(loc)
 	if err != nil {
 		return nil, fmt.Errorf("reading: %w", err)

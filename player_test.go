@@ -20,7 +20,7 @@ func TestMethodPlayer(t *testing.T) {
 			playerName: "Hoeb",
 			clubs: Clubs{
 				clubs: map[string]*Club{
-					"CNT": &Club{Name: "CNT", Players: []*Player{{Name: "mxygem"}}},
+					"CNT": {Name: "CNT", Players: []*Player{{Name: "mxygem"}}},
 				},
 			},
 			expectedErr: fmt.Errorf(`player "Hoeb" not found`),
@@ -30,8 +30,8 @@ func TestMethodPlayer(t *testing.T) {
 			playerName: "Quinoa",
 			clubs: Clubs{
 				clubs: map[string]*Club{
-					"CNT": &Club{Name: "CNT", Players: []*Player{{Name: "mxygem"}, {Name: "Hoeb"}}},
-					"SP":  &Club{Name: "SP", Players: []*Player{{Name: "Quinoa"}, {Name: "Jasmin"}}},
+					"CNT": {Name: "CNT", Players: []*Player{{Name: "mxygem"}, {Name: "Hoeb"}}},
+					"SP":  {Name: "SP", Players: []*Player{{Name: "Quinoa"}, {Name: "Jasmin"}}},
 				},
 			},
 			expected: &Player{Name: "Quinoa", Club: "SP"},
@@ -65,7 +65,7 @@ func TestPlayer(t *testing.T) {
 			playerName: "Hoeb",
 			clubs: Clubs{
 				clubs: map[string]*Club{
-					"CNT": &Club{Name: "CNT", Players: []*Player{{Name: "mxygem"}, {Name: "Capsy"}, {Name: "PHTEVEN"}, {Name: "Hoeb"}}},
+					"CNT": {Name: "CNT", Players: []*Player{{Name: "mxygem"}, {Name: "Capsy"}, {Name: "PHTEVEN"}, {Name: "Hoeb"}}},
 				},
 			},
 			expected:    &Player{Name: "Hoeb", Club: "CNT"},
@@ -98,8 +98,8 @@ func TestCreatePlayer(t *testing.T) {
 			player:   &Player{Name: "Andr0meda"},
 			clubs: Clubs{
 				clubs: map[string]*Club{
-					"CNT": &Club{Name: "CNT", Players: []*Player{{Name: "mxygem"}, {Name: "Hoeb"}}},
-					"SP":  &Club{Name: "SP", Players: []*Player{{Name: "Quinoa"}, {Name: "Jasmin"}}},
+					"CNT": {Name: "CNT", Players: []*Player{{Name: "mxygem"}, {Name: "Hoeb"}}},
+					"SP":  {Name: "SP", Players: []*Player{{Name: "Quinoa"}, {Name: "Jasmin"}}},
 				},
 			},
 			expectedErr: fmt.Errorf(`club "DYR" not found`),
@@ -110,7 +110,7 @@ func TestCreatePlayer(t *testing.T) {
 			player:   &Player{Name: "LadyLuna"},
 			clubs: Clubs{
 				clubs: map[string]*Club{
-					"EVA": &Club{Name: "EVA", Players: []*Player{{Name: "Shotgun"}, {Name: "LadyLuna"}}},
+					"EVA": {Name: "EVA", Players: []*Player{{Name: "Shotgun"}, {Name: "LadyLuna"}}},
 				},
 			},
 			expectedErr: fmt.Errorf(`creating player: player "LadyLuna" already exists in club "EVA"`),
@@ -121,7 +121,7 @@ func TestCreatePlayer(t *testing.T) {
 			player:   &Player{Name: "RedKangaroo"},
 			clubs: Clubs{
 				clubs: map[string]*Club{
-					"BRD": &Club{Name: "BRD", Players: []*Player{{Name: "BlackBad"}, {Name: "MochaGamma"}}},
+					"BRD": {Name: "BRD", Players: []*Player{{Name: "BlackBad"}, {Name: "MochaGamma"}}},
 				},
 			},
 			expected: &Player{Name: "RedKangaroo", Club: "BRD"},
@@ -155,12 +155,12 @@ func TestRemovePlayer(t *testing.T) {
 			playerName: "Wishy",
 			clubs: Clubs{
 				clubs: map[string]*Club{
-					"DYR": &Club{Name: "DYR", Players: []*Player{{Name: "RubyBlack"}, {Name: "Spooffy"}}},
+					"DYR": {Name: "DYR", Players: []*Player{{Name: "RubyBlack"}, {Name: "Spooffy"}}},
 				},
 			},
 			expected: Clubs{
 				clubs: map[string]*Club{
-					"DYR": &Club{Name: "DYR", Players: []*Player{{Name: "RubyBlack"}, {Name: "Spooffy"}}},
+					"DYR": {Name: "DYR", Players: []*Player{{Name: "RubyBlack"}, {Name: "Spooffy"}}},
 				},
 			},
 			expectedErr: fmt.Errorf(`removing player: player "Wishy" does not exist`),
@@ -170,12 +170,12 @@ func TestRemovePlayer(t *testing.T) {
 			playerName: "_ScarletRose_",
 			clubs: Clubs{
 				clubs: map[string]*Club{
-					"KMA": &Club{Name: "KMA", Players: []*Player{{Name: "_ScarletRose_"}, {Name: "AriettaRex"}, {Name: "Emeriya"}}},
+					"KMA": {Name: "KMA", Players: []*Player{{Name: "_ScarletRose_"}, {Name: "AriettaRex"}, {Name: "Emeriya"}}},
 				},
 			},
 			expected: Clubs{
 				clubs: map[string]*Club{
-					"KMA": &Club{Name: "KMA", Players: []*Player{{Name: "AriettaRex"}, {Name: "Emeriya"}}},
+					"KMA": {Name: "KMA", Players: []*Player{{Name: "AriettaRex"}, {Name: "Emeriya"}}},
 				},
 			},
 		},
@@ -184,12 +184,12 @@ func TestRemovePlayer(t *testing.T) {
 			playerName: "_ScarletRose_",
 			clubs: Clubs{
 				clubs: map[string]*Club{
-					"KMA": &Club{Name: "KMA", Players: []*Player{{Name: "Emeriya"}, {Name: "Moira"}, {Name: "_ScarletRose_"}}},
+					"KMA": {Name: "KMA", Players: []*Player{{Name: "Emeriya"}, {Name: "Moira"}, {Name: "_ScarletRose_"}}},
 				},
 			},
 			expected: Clubs{
 				clubs: map[string]*Club{
-					"KMA": &Club{Name: "KMA", Players: []*Player{{Name: "Emeriya"}, {Name: "Moira"}}},
+					"KMA": {Name: "KMA", Players: []*Player{{Name: "Emeriya"}, {Name: "Moira"}}},
 				},
 			},
 		},
@@ -198,7 +198,7 @@ func TestRemovePlayer(t *testing.T) {
 			playerName: "_ScarletRose_",
 			clubs: Clubs{
 				clubs: map[string]*Club{
-					"KMA": &Club{Name: "KMA", Players: []*Player{
+					"KMA": {Name: "KMA", Players: []*Player{
 						{Name: "Emeriya"},
 						{Name: "Moira"},
 						{Name: "_ScarletRose_"},
@@ -209,7 +209,7 @@ func TestRemovePlayer(t *testing.T) {
 			},
 			expected: Clubs{
 				clubs: map[string]*Club{
-					"KMA": &Club{Name: "KMA", Players: []*Player{
+					"KMA": {Name: "KMA", Players: []*Player{
 						{Name: "Emeriya"},
 						{Name: "Moira"},
 						{Name: "AriettaRex"},
@@ -250,14 +250,14 @@ func TestMovePlayer(t *testing.T) {
 			newClubName: "SP",
 			clubs: Clubs{
 				clubs: map[string]*Club{
-					"CNT": &Club{Name: "CNT", Players: []*Player{{Name: "mxygem"}, {Name: "Hoeb"}}},
-					"SP":  &Club{Name: "SP", Players: []*Player{{Name: "Quinoa"}, {Name: "Jasmin"}}},
+					"CNT": {Name: "CNT", Players: []*Player{{Name: "mxygem"}, {Name: "Hoeb"}}},
+					"SP":  {Name: "SP", Players: []*Player{{Name: "Quinoa"}, {Name: "Jasmin"}}},
 				},
 			},
 			expectedClubs: Clubs{
 				clubs: map[string]*Club{
-					"CNT": &Club{Name: "CNT", Players: []*Player{{Name: "mxygem"}, {Name: "Hoeb"}}},
-					"SP":  &Club{Name: "SP", Players: []*Player{{Name: "Quinoa"}, {Name: "Jasmin"}}},
+					"CNT": {Name: "CNT", Players: []*Player{{Name: "mxygem"}, {Name: "Hoeb"}}},
+					"SP":  {Name: "SP", Players: []*Player{{Name: "Quinoa"}, {Name: "Jasmin"}}},
 				},
 			},
 			expectedErr: fmt.Errorf(`unable to move player "treees" to "SP": player "treees" does not exist`),
@@ -268,12 +268,12 @@ func TestMovePlayer(t *testing.T) {
 			newClubName: "SP",
 			clubs: Clubs{
 				clubs: map[string]*Club{
-					"CNT": &Club{Name: "CNT", Players: []*Player{{Name: "mxygem"}, {Name: "Hoeb"}}},
+					"CNT": {Name: "CNT", Players: []*Player{{Name: "mxygem"}, {Name: "Hoeb"}}},
 				},
 			},
 			expectedClubs: Clubs{
 				clubs: map[string]*Club{
-					"CNT": &Club{Name: "CNT", Players: []*Player{{Name: "mxygem"}, {Name: "Hoeb"}}},
+					"CNT": {Name: "CNT", Players: []*Player{{Name: "mxygem"}, {Name: "Hoeb"}}},
 				},
 			},
 			expectedErr: fmt.Errorf(`unable to move player "mxygem" to "SP": getting new club: no club "SP" found`),
@@ -284,14 +284,14 @@ func TestMovePlayer(t *testing.T) {
 			newClubName: "SP",
 			clubs: Clubs{
 				clubs: map[string]*Club{
-					"CNT": &Club{Name: "CNT", Players: []*Player{{Name: "mxygem"}, {Name: "Hoeb"}}},
-					"SP":  &Club{Name: "SP", Players: []*Player{{Name: "Quinoa"}, {Name: "mxygem"}, {Name: "Jasmin"}}},
+					"CNT": {Name: "CNT", Players: []*Player{{Name: "mxygem"}, {Name: "Hoeb"}}},
+					"SP":  {Name: "SP", Players: []*Player{{Name: "Quinoa"}, {Name: "mxygem"}, {Name: "Jasmin"}}},
 				},
 			},
 			expectedClubs: Clubs{
 				clubs: map[string]*Club{
-					"CNT": &Club{Name: "CNT", Players: []*Player{{Name: "mxygem"}, {Name: "Hoeb"}}},
-					"SP":  &Club{Name: "SP", Players: []*Player{{Name: "Quinoa"}, {Name: "mxygem"}, {Name: "Jasmin"}}},
+					"CNT": {Name: "CNT", Players: []*Player{{Name: "mxygem"}, {Name: "Hoeb"}}},
+					"SP":  {Name: "SP", Players: []*Player{{Name: "Quinoa"}, {Name: "mxygem"}, {Name: "Jasmin"}}},
 				},
 			},
 			expectedErr: fmt.Errorf(`unable to move player "mxygem" to "SP": creating player in new club: player "mxygem" already exists in club "SP"`),
@@ -302,15 +302,15 @@ func TestMovePlayer(t *testing.T) {
 			newClubName: "SP",
 			clubs: Clubs{
 				clubs: map[string]*Club{
-					"CNT": &Club{Name: "CNT", Players: []*Player{{Name: "mxygem"}, {Name: "Hoeb"}}},
-					"SP":  &Club{Name: "SP", Players: []*Player{{Name: "Quinoa"}, {Name: "Jasmin"}}},
+					"CNT": {Name: "CNT", Players: []*Player{{Name: "mxygem"}, {Name: "Hoeb"}}},
+					"SP":  {Name: "SP", Players: []*Player{{Name: "Quinoa"}, {Name: "Jasmin"}}},
 				},
 			},
 			expected: &Player{Name: "mxygem", Club: "SP"},
 			expectedClubs: Clubs{
 				clubs: map[string]*Club{
-					"CNT": &Club{Name: "CNT", Players: []*Player{{Name: "Hoeb"}}},
-					"SP":  &Club{Name: "SP", Players: []*Player{{Name: "Quinoa"}, {Name: "Jasmin"}, {Name: "mxygem"}}},
+					"CNT": {Name: "CNT", Players: []*Player{{Name: "Hoeb"}}},
+					"SP":  {Name: "SP", Players: []*Player{{Name: "Quinoa"}, {Name: "Jasmin"}, {Name: "mxygem"}}},
 				},
 			},
 		},
@@ -343,14 +343,14 @@ func TestCsBulkUpdatePlayers(t *testing.T) {
 			name: "no player data provided",
 			clubs: Clubs{
 				clubs: map[string]*Club{
-					"CNT": &Club{Name: "CNT", Players: []*Player{{Name: "mxygem"}, {Name: "Hoeb"}}},
-					"SP":  &Club{Name: "SP", Players: []*Player{{Name: "Quinoa"}, {Name: "Jasmin"}}},
+					"CNT": {Name: "CNT", Players: []*Player{{Name: "mxygem"}, {Name: "Hoeb"}}},
+					"SP":  {Name: "SP", Players: []*Player{{Name: "Quinoa"}, {Name: "Jasmin"}}},
 				},
 			},
 			expected: Clubs{
 				clubs: map[string]*Club{
-					"CNT": &Club{Name: "CNT", Players: []*Player{{Name: "mxygem"}, {Name: "Hoeb"}}},
-					"SP":  &Club{Name: "SP", Players: []*Player{{Name: "Quinoa"}, {Name: "Jasmin"}}},
+					"CNT": {Name: "CNT", Players: []*Player{{Name: "mxygem"}, {Name: "Hoeb"}}},
+					"SP":  {Name: "SP", Players: []*Player{{Name: "Quinoa"}, {Name: "Jasmin"}}},
 				},
 			},
 		},
@@ -358,7 +358,7 @@ func TestCsBulkUpdatePlayers(t *testing.T) {
 			name: "players in club have levels added",
 			clubs: Clubs{
 				clubs: map[string]*Club{
-					"CNT": &Club{Name: "CNT", Players: []*Player{{Name: "mxygem"}, {Name: "Hoeb"}}},
+					"CNT": {Name: "CNT", Players: []*Player{{Name: "mxygem"}, {Name: "Hoeb"}}},
 				},
 			},
 			players: []*Player{
@@ -367,7 +367,7 @@ func TestCsBulkUpdatePlayers(t *testing.T) {
 			},
 			expected: Clubs{
 				clubs: map[string]*Club{
-					"CNT": &Club{Name: "CNT", Players: []*Player{
+					"CNT": {Name: "CNT", Players: []*Player{
 						{Name: "mxygem", Level: 18},
 						{Name: "Hoeb", Level: 15},
 					}},
@@ -378,7 +378,7 @@ func TestCsBulkUpdatePlayers(t *testing.T) {
 			name: "single player added to single club",
 			clubs: Clubs{
 				clubs: map[string]*Club{
-					"CNT": &Club{Name: "CNT", Players: []*Player{{Name: "Hoeb"}}},
+					"CNT": {Name: "CNT", Players: []*Player{{Name: "Hoeb"}}},
 				},
 			},
 			players: []*Player{
@@ -386,7 +386,7 @@ func TestCsBulkUpdatePlayers(t *testing.T) {
 			},
 			expected: Clubs{
 				clubs: map[string]*Club{
-					"CNT": &Club{Name: "CNT", Players: []*Player{
+					"CNT": {Name: "CNT", Players: []*Player{
 						{Name: "Hoeb"},
 						{Name: "mxygem", Level: 18},
 					}},
@@ -397,8 +397,8 @@ func TestCsBulkUpdatePlayers(t *testing.T) {
 			name: "multiple adds and updates across multiple clubs",
 			clubs: Clubs{
 				clubs: map[string]*Club{
-					"CNT": &Club{Name: "CNT", Players: []*Player{{Name: "Hoeb"}, {Name: "mxygem", Level: 18}}},
-					"MID": &Club{Name: "MID", Players: []*Player{{Name: "AnsaLovesYou"}}},
+					"CNT": {Name: "CNT", Players: []*Player{{Name: "Hoeb"}, {Name: "mxygem", Level: 18}}},
+					"MID": {Name: "MID", Players: []*Player{{Name: "AnsaLovesYou"}}},
 				},
 			},
 			players: []*Player{
@@ -410,15 +410,15 @@ func TestCsBulkUpdatePlayers(t *testing.T) {
 			},
 			expected: Clubs{
 				clubs: map[string]*Club{
-					"CNT": &Club{Name: "CNT", Players: []*Player{
+					"CNT": {Name: "CNT", Players: []*Player{
 						{Name: "Hoeb"},
 						{Name: "mxygem", Level: 19},
 						{Name: "M4rs", Level: 15},
 					}},
-					"MID": &Club{Name: "MID", Players: []*Player{
+					"MID": {Name: "MID", Players: []*Player{
 						{Name: "AnsaLovesYou", Location: Location{X: 123, Y: 456}},
 					}},
-					"SP": &Club{Name: "SP", Players: []*Player{
+					"SP": {Name: "SP", Players: []*Player{
 						{Name: "Quinoa", Level: 16},
 						{Name: "Jasmine", Level: 16},
 					}},
@@ -455,7 +455,7 @@ func TestCsUpdatePlayer(t *testing.T) {
 			name: "player not found",
 			clubs: Clubs{
 				clubs: map[string]*Club{
-					"CNT": &Club{Name: "CNT", Players: []*Player{
+					"CNT": {Name: "CNT", Players: []*Player{
 						{Name: "Hoeb"},
 						{Name: "M4rs", Level: 15},
 					}},
@@ -472,7 +472,7 @@ func TestCsUpdatePlayer(t *testing.T) {
 			name: "player found",
 			clubs: Clubs{
 				clubs: map[string]*Club{
-					"CNT": &Club{Name: "CNT", Players: []*Player{
+					"CNT": {Name: "CNT", Players: []*Player{
 						{Name: "Hoeb"},
 						{Name: "M4rs", Level: 15},
 					}},
@@ -489,7 +489,7 @@ func TestCsUpdatePlayer(t *testing.T) {
 			},
 			expectedClubs: Clubs{
 				clubs: map[string]*Club{
-					"CNT": &Club{Name: "CNT", Players: []*Player{
+					"CNT": {Name: "CNT", Players: []*Player{
 						{Name: "Hoeb"},
 						{Name: "M4rs", Level: 16},
 					}},

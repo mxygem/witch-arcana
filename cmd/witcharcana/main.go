@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"sort"
 
 	wa "github.com/mxygem/witch-arcana"
 	flag "github.com/spf13/pflag"
@@ -21,6 +20,7 @@ func main() {
 	var clubName, newClubName, name string
 	var dataLoc, csvLoc string
 	var level, x, y int
+	var allClubs bool
 
 	flag.StringVarP(&dataLoc, "data", "d", fileLoc, "location of imported clubs file")
 	flag.StringVarP(&clubName, "club", "c", "", "name of player's club")
@@ -30,36 +30,52 @@ func main() {
 	flag.IntVarP(&x, "pos-x", "x", 0, "player's x position")
 	flag.IntVarP(&y, "pos-y", "y", 0, "player's position")
 	flag.StringVar(&csvLoc, "csv", "", "import player data via csv")
+	flag.BoolVarP(&allClubs, "all", "a", false, "get all clubs")
 	flag.BoolVarP(&shouldLog, "verbose", "v", false, "enable log output")
 	flag.Parse()
 
 	args := flag.Args()
 	if len(args) < 2 {
-		log.Fatal("missing required command & subcommand")
+		log.Println("missing required command & subcommand")
+		flag.Usage()
 	}
 
-	cs, err := wa.Open(dataLoc)
-	if err != nil {
-		log.Fatalf("opening club data: %v", err)
-	}
-
-	if shouldLog {
-		fmt.Printf("found %d clubs\n", len(cs.All()))
-		for k, v := range cs.All() {
-			fmt.Printf("club %q with %d players\n", k, len(v.Players))
-			for i, p := range v.Players {
-				fmt.Printf("\tp %d:%+v\n", i, p)
-			}
-		}
+	cs := wa.NewClubs(shouldLog)
+	if err := cs.LoadData(dataLoc); err != nil {
+		log.Fatalf("failed to load data: %v", err)
 	}
 
 	switch args[1] {
 	case "club":
-		c := wa.Club{Name: clubName, Location: wa.Location{X: x, Y: y}}
-
-		if err := manageClub(args[0], cs.All(), c); err != nil {
-			log.Fatalf("managing club: %v", err)
+		switch args[0] {
+		case "get":
+			var d any
+			if allClubs {
+				d = cs.All()
+			} else {
+				c, err := cs.Club(clubName)
+				if err != nil {
+					log.Fatalf("getting club: %v", err)
+				}
+				d = c
+			}
+			wa.Print(d)
+		case "add":
+			c := wa.NewClub(clubName, x, y)
+			if err := cs.CreateClub(c); err != nil {
+				log.Fatalf("creating club: %v", err)
+			}
+		case "update":
+			c := wa.NewClub(clubName, x, y)
+			if err := cs.UpdateClub(c); err != nil {
+				log.Fatalf("updating club: %v", err)
+			}
+		case "remove":
+			if err := cs.RemoveClub(clubName); err != nil {
+				log.Fatalf("removing club: %v", err)
+			}
 		}
+
 	case "player":
 		if csvLoc != "" {
 			ps, err := wa.ReadCSV(csvLoc)
@@ -86,110 +102,96 @@ func main() {
 		log.Fatalf("unknown subcommand: %q", args[0])
 	}
 
-	if err = wa.Save(dataLoc, cs); err != nil {
+	if err := wa.Save(dataLoc, cs); err != nil {
 		log.Fatalf("saving data: %v", err)
 	}
 }
 
-func bulkUpdatePlayers(cs wa.Clubs, ps wa.Players) {
-	if shouldLog {
-		log.Println("-- bulkUpdatePlayers START --")
-		log.Printf("cs: %+v\n", cs)
-		log.Printf("ps: count: %d\n", len(ps))
-	}
+// func bulkUpdatePlayers(cs wa.Clubs, ps wa.Players) {
+// 	if shouldLog {
+// 		log.Println("-- bulkUpdatePlayers START --")
+// 		log.Printf("cs: %+v\n", cs)
+// 		log.Printf("ps: count: %d\n", len(ps))
+// 	}
+// 	for _, p := range ps {
+// 		c, ok := cs.All()[p.Club]
+// 		if !ok {
+// 			if shouldLog {
+// 				log.Printf("adding new club: %q\n", p.Club)
+// 				log.Printf("and new player: %q\n", p.Name)
+// 			}
+// 			nc := &wa.Club{Name: p.Club, Players: wa.Players{p}}
+// 			cs.All()[nc.Name] = nc
+// 			continue
+// 		}
+// 		if shouldLog {
+// 			log.Printf("looking through club %q's players\n", c.Name)
+// 		}
+// 		var found bool
+// 		for _, cp := range c.Players {
+// 			if p.Name != cp.Name {
+// 				continue
+// 			}
+// 			if shouldLog {
+// 				log.Printf("player match for update: %q\n", p.Name)
+// 			}
+// 			upPlayer(cp, p)
+// 			found = true
+// 			break
+// 		}
+// 		if !found {
+// 			if shouldLog {
+// 				log.Printf("player %q not found, adding\n", p.Name)
+// 			}
+// 			p.Club = ""
+// 			c.Players = append(c.Players, p)
+// 		}
+// 	}
+// 	if shouldLog {
+// 		log.Println("-- bulkUpdatePlayers END --")
+// 	}
+// }
+// func upPlayer(p, up *wa.Player) {
+// 	p.Club = ""
+// 	if up.Level != 0 && up.Level != p.Level {
+// 		p.Level = up.Level
+// 	}
+// 	if up.Location.X != 0 && up.Location.X != p.Location.X {
+// 		p.Location.X = up.Location.X
+// 	}
+// 	if up.Location.Y != 0 && up.Location.Y != p.Location.Y {
+// 		p.Location.Y = up.Location.Y
+// 	}
+// 	if up.InHive != p.InHive {
+// 		p.InHive = up.InHive
+// 	}
+// }
+// func updatePlayerClubKnown(c *wa.Club, up *wa.Player) {
+// 	if up == nil {
+// 		return
+// 	}
+// 	for _, p := range c.Players {
+// 		if p.Name != up.Name {
+// 			continue
+// 		}
+// 		upPlayer(p, up)
+// 		return
+// 	}
+// }
+// // TODO: Move to clubs.go
+// func sortedClubIDs(cs map[string]*wa.Club) []string {
+// 	ids := make([]string, 0, len(cs))
+// 	for _, c := range cs {
+// 		ids = append(ids, c.Name)
+// 	}
+// 	return sort.StringSlice(ids)
+// }
 
-	for _, p := range ps {
-		c, ok := cs.All()[p.Club]
-		if !ok {
-			if shouldLog {
-				log.Printf("adding new club: %q\n", p.Club)
-				log.Printf("and new player: %q\n", p.Name)
-			}
-
-			nc := &wa.Club{Name: p.Club, Players: wa.Players{p}}
-			cs.All()[nc.Name] = nc
-
-			continue
-		}
-
-		if shouldLog {
-			log.Printf("looking through club %q's players\n", c.Name)
-		}
-		var found bool
-		for _, cp := range c.Players {
-			if p.Name != cp.Name {
-				continue
-			}
-
-			if shouldLog {
-				log.Printf("player match for update: %q\n", p.Name)
-			}
-			upPlayer(cp, p)
-			found = true
-			break
-		}
-
-		if !found {
-			if shouldLog {
-				log.Printf("player %q not found, adding\n", p.Name)
-			}
-			p.Club = ""
-			c.Players = append(c.Players, p)
-		}
-	}
-
-	if shouldLog {
-		log.Println("-- bulkUpdatePlayers END --")
-	}
-}
-
-func upPlayer(p, up *wa.Player) {
-	p.Club = ""
-
-	if up.Level != 0 && up.Level != p.Level {
-		p.Level = up.Level
-	}
-	if up.Location.X != 0 && up.Location.X != p.Location.X {
-		p.Location.X = up.Location.X
-	}
-	if up.Location.Y != 0 && up.Location.Y != p.Location.Y {
-		p.Location.Y = up.Location.Y
-	}
-	if up.InHive != p.InHive {
-		p.InHive = up.InHive
-	}
-}
-
-func updatePlayerClubKnown(c *wa.Club, up *wa.Player) {
-	if up == nil {
-		return
-	}
-
-	for _, p := range c.Players {
-		if p.Name != up.Name {
-			continue
-		}
-
-		upPlayer(p, up)
-
-		return
-	}
-}
-
-// TODO: Move to clubs.go
-func sortedClubIDs(cs map[string]*wa.Club) []string {
-	ids := make([]string, 0, len(cs))
-	for _, c := range cs {
-		ids = append(ids, c.Name)
-	}
-
-	return sort.StringSlice(ids)
-}
-
-func manageClub(action string, cs map[string]*wa.Club, c wa.Club) error {
+func manageClub(action string, cs *wa.Clubs, c wa.Club) error {
 	switch action {
 	case "get":
-		fh, err := getClub(cs, c)
+		fh, err := getClub(cs.All(), c)
+
 		if err != nil {
 			return fmt.Errorf("getting club: %w", err)
 		}
@@ -197,15 +199,15 @@ func manageClub(action string, cs map[string]*wa.Club, c wa.Club) error {
 			return fmt.Errorf("printing found club: %w", err)
 		}
 	case "add":
-		if err := addClub(cs, c); err != nil {
+		if err := addClub(cs.All(), c); err != nil {
 			return fmt.Errorf("adding club: %w", err)
 		}
 	case "update":
-		if err := updateClub(cs, c); err != nil {
+		if err := updateClub(cs.All(), c); err != nil {
 			return fmt.Errorf("updating club: %w", err)
 		}
 	case "remove":
-		if err := removeClub(cs, c); err != nil {
+		if err := removeClub(cs.All(), c); err != nil {
 			return fmt.Errorf("removing club: %w", err)
 		}
 	default:
