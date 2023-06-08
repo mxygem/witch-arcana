@@ -38,6 +38,63 @@ func TestNewClub(t *testing.T) {
 	}
 }
 
+func TestLoadData(t *testing.T) {
+	testCases := []struct {
+		name        string
+		filename    string
+		expected    *Clubs
+		expectedErr error
+	}{
+		{
+			name:     "file not found",
+			filename: "./testdata/404.json",
+			expectedErr: fmt.Errorf("loading club data from file: \"./testdata/404.json\": " +
+				"reading: open ./testdata/404.json: no such file or directory"),
+		},
+		{
+			name:     "invalid json",
+			filename: "./testdata/invalid.json",
+			expectedErr: fmt.Errorf("loading club data from file: \"./testdata/invalid.json\": " +
+				"unmarshaling: invalid character '}' looking for beginning of value"),
+		},
+		{
+			name:     "empty file",
+			filename: "./testdata/empty.json",
+			expected: &Clubs{},
+		},
+		{
+			name:     "successful load",
+			filename: "./testdata/clubs.json",
+			expected: &Clubs{
+				clubs: map[string]*Club{
+					"404": {Name: "404", Location: &Location{X: 123, Y: 456}, Players: Players{
+						{Name: "DireVoidCat", Level: 15, Might: 51848883},
+						{Name: "LoverOnyx", Location: &Location{X: 123, Y: 457}, InHive: true},
+					}},
+
+					"AZA": {Name: "AZA", Players: Players{
+						{Name: "Fayeee", Level: 18, Might: 70265122, Location: &Location{X: 303, Y: 733}},
+						{Name: "Richard"},
+					}},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual, err := loadData(tc.filename)
+
+			assert.Equal(t, tc.expected, actual)
+			if tc.expectedErr != nil {
+				assert.EqualError(t, err, tc.expectedErr.Error())
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
 func TestCsAll(t *testing.T) {
 	testCases := []struct {
 		name     string

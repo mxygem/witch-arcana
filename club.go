@@ -1,6 +1,9 @@
 package witcharcana
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+)
 
 // Clubs is a key value store of clubs with keys being the club's initials.
 type Clubs struct {
@@ -34,23 +37,33 @@ func NewClub(name string, x, y int) *Club {
 }
 
 func (cs *Clubs) LoadData(filename string) error {
-	csd, err := open(filename)
+	csd, err := loadData(filename)
 	if err != nil {
-		return fmt.Errorf("loading club data from file: %q: %w", filename, err)
+		return fmt.Errorf("loading data: %w", err)
 	}
 
 	if cs.log {
-		fmt.Printf("found %d clubs\n", len(csd.clubs))
+		log.Printf("found %d clubs\n", len(csd.clubs))
 		for k, v := range csd.clubs {
-			fmt.Printf("club %q with %d players\n", k, len(v.Players))
+			log.Printf("club %q with %d players\n", k, len(v.Players))
 			for i, p := range v.Players {
-				fmt.Printf("\tp %d:%+v\n", i, p)
+				log.Printf("\tp %d:%+v\n", i, p)
 			}
 		}
 	}
 
 	cs.clubs = csd.clubs
+
 	return nil
+}
+
+func loadData(filename string) (*Clubs, error) {
+	csd, err := open(filename)
+	if err != nil {
+		return nil, fmt.Errorf("loading club data from file: %q: %w", filename, err)
+	}
+
+	return csd, nil
 }
 
 func (cs *Clubs) All() map[string]*Club {

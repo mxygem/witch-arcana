@@ -403,7 +403,7 @@ func TestCsBulkUpdatePlayers(t *testing.T) {
 			},
 			players: []*Player{
 				{Name: "mxygem", Level: 19, Club: "CNT"},
-				{Name: "AnsaLovesYou", Club: "MID", Location: Location{X: 123, Y: 456}},
+				{Name: "AnsaLovesYou", Club: "MID", Location: &Location{X: 123, Y: 456}},
 				{Name: "Quinoa", Club: "SP", Level: 16},
 				{Name: "Jasmine", Club: "SP", Level: 16},
 				{Name: "M4rs", Club: "CNT", Level: 15},
@@ -416,7 +416,7 @@ func TestCsBulkUpdatePlayers(t *testing.T) {
 						{Name: "M4rs", Level: 15},
 					}},
 					"MID": {Name: "MID", Players: []*Player{
-						{Name: "AnsaLovesYou", Location: Location{X: 123, Y: 456}},
+						{Name: "AnsaLovesYou", Location: &Location{X: 123, Y: 456}},
 					}},
 					"SP": {Name: "SP", Players: []*Player{
 						{Name: "Quinoa", Level: 16},
@@ -530,9 +530,9 @@ func TestUpdatePlayer(t *testing.T) {
 		},
 		{
 			name:     "location",
-			op:       &Player{Name: "Hoeb", Location: Location{X: 123, Y: 456}},
-			up:       &Player{Name: "Hoeb", Location: Location{X: 789, Y: 321}},
-			expected: &Player{Name: "Hoeb", Location: Location{X: 789, Y: 321}},
+			op:       &Player{Name: "Hoeb", Location: &Location{X: 123, Y: 456}},
+			up:       &Player{Name: "Hoeb", Location: &Location{X: 789, Y: 321}},
+			expected: &Player{Name: "Hoeb", Location: &Location{X: 789, Y: 321}},
 		},
 		{
 			name:     "in hive",

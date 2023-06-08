@@ -1,0 +1,41 @@
+{
+  "404": {
+    "name": "404",
+    "location": {
+      "x": 123,
+      "y": 456
+    },
+    "players": [
+      {
+        "name": "DireVoidCat",
+        "level": 15,
+        "might": 51848883
+      },
+      {
+        "name": "LoverOnyx",
+        "location": {
+          "x": 123,
+          "y": 457
+        },
+        "in_hive": true
+      }
+    ]
+  },
+  "AZA": {
+    "name": "AZA",
+    "players": [
+      {
+        "name": "Fayeee",
+        "location": {
+          "x": 303,
+          "y": 733
+        },
+        "level": 18,
+        "might": 70265122
+      },
+      {
+        "name": "Richard"
+      }
+    ]
+  }
+}

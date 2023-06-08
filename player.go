@@ -9,12 +9,12 @@ type Players []*Player
 
 // Player represents a player and various data about them.
 type Player struct {
-	Name     string   `json:"name" csv:"name"`
-	Location Location `json:"location,omitempty" csv:"location"`
-	InHive   bool     `json:"in_hive,omitempty" csv:"in_hive"`
-	Level    int      `json:"level,omitempty" csv:"level,lvl"`
-	Might    int64    `json:"might,omitempty" csv:"might"`
-	Club     string   `json:"club,omitempty" csv:"club"`
+	Name     string    `json:"name" csv:"name"`
+	Location *Location `json:"location,omitempty" csv:"location"`
+	InHive   bool      `json:"in_hive,omitempty" csv:"in_hive"`
+	Level    int       `json:"level,omitempty" csv:"level,lvl"`
+	Might    int64     `json:"might,omitempty" csv:"might"`
+	Club     string    `json:"club,omitempty" csv:"club"`
 }
 
 // Player returns a given player if found.

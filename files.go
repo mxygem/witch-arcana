@@ -12,6 +12,7 @@ import (
 )
 
 func open(loc string) (*Clubs, error) {
+	// todo: auto create file if not found
 	dat, err := os.ReadFile(loc)
 	if err != nil {
 		return nil, fmt.Errorf("reading: %w", err)
@@ -25,19 +26,6 @@ func open(loc string) (*Clubs, error) {
 	}
 
 	return cs, nil
-
-	// dataFile, err := os.OpenFile(loc, os.O_CREATE|os.O_RDWR, 0644)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("opening: %w", err)
-	// }
-	// defer dataFile.Close()
-
-	// cs := clubs{}
-	// if err := json.NewDecoder(dataFile).Decode(&cs); err != nil {
-	// 	return nil, fmt.Errorf("decoding clubs: %w", err)
-	// }
-
-	// return cs, nil
 }
 
 // ReadCSV attempts to read in a csv file from the given location for bulk changes.

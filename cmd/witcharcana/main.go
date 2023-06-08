@@ -95,7 +95,7 @@ func main() {
 				log.Fatalf("bulk updating players: %v", err)
 			}
 		} else {
-			p := &wa.Player{Name: name, Level: level, Location: wa.Location{X: x, Y: y}}
+			p := &wa.Player{Name: name, Level: level, Location: &wa.Location{X: x, Y: y}}
 
 			if err := managePlayer(args[0], cs, clubName, newClubName, p); err != nil {
 				log.Fatalf("managing player: %v", err)
