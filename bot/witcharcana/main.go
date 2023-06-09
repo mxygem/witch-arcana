@@ -17,6 +17,8 @@ var (
 	BotToken     = flag.String("token", "", "Bot access token")
 	DataLocation = flag.String("data", "", "Location of data")
 	DBConn       = flag.String("dbconn", "", "database location")
+	DBUser       = flag.String("dbuser", "", "database user")
+	DBPass       = flag.String("dbpass", "", "database password")
 	DBName       = flag.String("dbname", "", "database name")
 	Debug        = flag.Bool("debug", false, "enable verbose logging")
 )
@@ -35,7 +37,14 @@ func main() {
 	// }
 
 	ctx := context.Background()
-	db := wa.NewDB(ctx, *DBConn, *DBName)
+	dbcfg := &wa.DBConfig{
+		Loc:  *DBConn,
+		Name: *DBName,
+		User: *DBUser,
+		Pass: *DBPass,
+	}
+
+	db := wa.NewDB(ctx, dbcfg)
 	if err := db.Connect(); err != nil {
 		log.Fatalf("connecting to db: %v", err)
 	}
@@ -80,7 +89,7 @@ func messageHandler(cs *wa.Clubs) func(s *discordgo.Session, m *discordgo.Messag
 			return
 		}
 
-		d, err := handleMessage(cs, m.Content)
+		d, err := handleMessage(cs, m)
 		if err != nil {
 			msg := fmt.Sprintf("bad request: %v", err)
 			_, err := s.ChannelMessageSend(m.ChannelID, msg)

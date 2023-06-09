@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/bwmarrin/discordgo"
 	wa "github.com/mxygem/witch-arcana"
 )
 
@@ -13,9 +14,11 @@ const (
 	_invalidMsg = "invalid command sent. need action and resource. example: `add player`"
 )
 
-func handleMessage(cs *wa.Clubs, m string) (any, error) {
-	msg := strings.TrimSpace(m[4:])
-	fmt.Printf("trimmed msg: %q", msg)
+func handleMessage(cs *wa.Clubs, m *discordgo.MessageCreate) (any, error) {
+	log.Printf("guild: %v channel: %v user: %v\n", m.GuildID, m.ChannelID, m.Author.Username)
+
+	msg := strings.TrimSpace(m.Content[4:])
+	log.Printf("trimmed msg: %q\n", msg)
 
 	d := strings.Split(msg, " ")
 	if len(d) < 2 {
@@ -30,13 +33,16 @@ func handleMessage(cs *wa.Clubs, m string) (any, error) {
 	actions := []string{"get", "add", "update", "remove"}
 	playerActions := append(actions, "move")
 
+	// once command is valid, set collection as guildID
+	cs.SetCollection(m.GuildID)
+
 	switch resource {
 	// club
 	case resources[0]:
 		switch action {
 		// get club
 		case actions[0]:
-			fmt.Println("get club")
+			log.Println("get club")
 			c, err := cs.Club(d[2])
 			if err != nil {
 				return nil, fmt.Errorf("getting club: %w", err)
@@ -50,9 +56,10 @@ func handleMessage(cs *wa.Clubs, m string) (any, error) {
 			return string(o), nil
 		// add club
 		case actions[1]:
-			fmt.Println("add club")
+			log.Println("add club")
 			var x, y int
-			if len(d) == 4 {
+			log.Printf("add club arg len: %d\n", len(d))
+			if len(d) == 5 {
 				xs, err := strconv.Atoi(d[3])
 				if err != nil {
 					return nil, fmt.Errorf("argument for x: %q is not a valid number", d[3])
@@ -79,7 +86,7 @@ func handleMessage(cs *wa.Clubs, m string) (any, error) {
 			return string(o), nil
 		// update club
 		case actions[2]:
-			fmt.Println("update club")
+			log.Println("update club")
 			var x, y int
 			if len(d) == 5 {
 				xs, err := strconv.Atoi(d[3])
@@ -148,12 +155,13 @@ func handleMessage(cs *wa.Clubs, m string) (any, error) {
 			y = ys
 		}
 
+		fmt.Printf("player name: %q\n", d[2])
 		p := wa.NewPlayer(d[2], clubName, level, x, y)
 
 		switch action {
 		// get player
 		case playerActions[0]:
-			fmt.Println("get player")
+			log.Println("get player")
 			gp, err := cs.Player(p.Name)
 			if err != nil {
 				return nil, fmt.Errorf("getting player: %v", err)
@@ -167,7 +175,7 @@ func handleMessage(cs *wa.Clubs, m string) (any, error) {
 			return string(o), nil
 		// add player
 		case playerActions[1]:
-			fmt.Println("add player")
+			log.Println("add player")
 			np, err := cs.CreatePlayer(p.Club, p)
 			if err != nil {
 				return nil, fmt.Errorf("creating player: %v", err)
@@ -181,7 +189,7 @@ func handleMessage(cs *wa.Clubs, m string) (any, error) {
 			return string(o), nil
 		// update player
 		case playerActions[2]:
-			fmt.Println("update player")
+			log.Println("update player")
 
 			up, err := cs.UpdatePlayer(p)
 			if err != nil {
@@ -196,13 +204,13 @@ func handleMessage(cs *wa.Clubs, m string) (any, error) {
 			return string(o), nil
 		// remove player
 		case playerActions[3]:
-			fmt.Println("remove player")
+			log.Println("remove player")
 
 			if err := cs.RemovePlayer(d[3]); err != nil {
 				log.Fatalf("removing player: %v", err)
 			}
 		case playerActions[4]:
-			fmt.Println("move player")
+			log.Println("move player")
 			mp, err := cs.MovePlayer(p.Name, p.Club)
 			if err != nil {
 				log.Fatalf("moving player: %v", err)

@@ -2,6 +2,7 @@ package witcharcana
 
 import (
 	"fmt"
+	"log"
 )
 
 // Players is a collection of players.
@@ -32,7 +33,7 @@ func NewPlayer(name, clubName string, level, x, y int) *Player {
 }
 
 // Player returns a given player if found.
-func (cs Clubs) Player(name string) (*Player, error) {
+func (cs *Clubs) Player(name string) (*Player, error) {
 	if _, p := player(cs, name); p != nil {
 		return p, nil
 	}
@@ -40,56 +41,87 @@ func (cs Clubs) Player(name string) (*Player, error) {
 	return nil, fmt.Errorf("player %q not found", name)
 }
 
-func player(cs Clubs, name string) (int, *Player) {
+func player(cs *Clubs, name string) (int, *Player) {
+
+	var c Club
+	var p Player
 	for _, club := range cs.clubs {
-		for i, p := range club.Players {
-			if p.Name != name {
+		for _, pl := range club.Players {
+			if pl.Name != name {
 				continue
 			}
 
-			op := *p
-			op.Club = club.Name
+			p = *pl
+			p.Club = club.Name
+			c = *club
 
-			return i, &op
+			break
 		}
+	}
+
+	if &c == nil || &p == nil {
+		return -1, nil
+	}
+
+	if cs.db != nil {
+		fp, err := cs.db.Player(c.Name, p.Name)
+		if err != nil {
+			log.Printf("getting player from db: %v", err)
+			return -1, nil
+		}
+
+		return 0, fp
 	}
 
 	return -1, nil
 }
 
 // CreatePlayer creates a new player.
-func (cs Clubs) CreatePlayer(clubName string, newPlayer *Player) (*Player, error) {
-	c := club(cs.clubs, clubName)
+func (cs *Clubs) CreatePlayer(clubName string, np *Player) (*Player, error) {
+	fmt.Printf("cs.CreatePlayer: clubName %q, np %q\n", clubName, np.Name)
+	c, err := cs.Club(clubName)
+	if err != nil {
+		return nil, fmt.Errorf("getting club: %w", err)
+	}
 	if c == nil {
 		return nil, fmt.Errorf("club %q not found", clubName)
 	}
 
-	if err := createPlayer(cs.clubs[clubName], newPlayer); err != nil {
+	if err := createPlayer(cs, c, np); err != nil {
 		return nil, fmt.Errorf("creating player: %w", err)
 	}
 
-	_, p := player(cs, newPlayer.Name)
+	_, p := player(cs, np.Name)
+	fmt.Printf("found player after create: %+v\n", p)
 
 	return p, nil
 }
 
-func createPlayer(club *Club, player *Player) error {
-	for _, p := range club.Players {
-		if p.Name == player.Name {
-			return fmt.Errorf("player %q already exists in club %q", player.Name, club.Name)
+func createPlayer(cs *Clubs, c *Club, np *Player) error {
+	fmt.Printf("checking if player p.Name exists: %q\n", np.Name)
+	for _, p := range c.Players {
+		if p.Name == np.Name {
+			return fmt.Errorf("player %q already exists in club %q", np.Name, c.Name)
 		}
 	}
 
-	if player.Club != "" {
-		player.Club = ""
+	if np.Club != "" {
+		np.Club = ""
 	}
-	club.Players = append(club.Players, player)
+
+	c.Players = append(c.Players, np)
+
+	if cs.db != nil {
+		if err := cs.db.Update(c); err != nil {
+			return fmt.Errorf("updating db: %w", err)
+		}
+	}
 
 	return nil
 }
 
 // RemovePlayer completely removes a player.
-func (cs Clubs) RemovePlayer(playerName string) error {
+func (cs *Clubs) RemovePlayer(playerName string) error {
 	if err := removePlayer(cs, playerName); err != nil {
 		return fmt.Errorf("removing player: %w", err)
 	}
@@ -97,20 +129,20 @@ func (cs Clubs) RemovePlayer(playerName string) error {
 	return nil
 }
 
-func removePlayer(cs Clubs, playerName string) error {
-	pos, player := player(cs, playerName)
+func removePlayer(clubs *Clubs, playerName string) error {
+	pos, player := player(clubs, playerName)
 	if player == nil {
 		return fmt.Errorf("player %q does not exist", playerName)
 	}
 
-	c := club(cs.clubs, player.Club)
+	c := club(clubs.clubs, player.Club)
 	c.Players = append(c.Players[:pos], c.Players[pos+1:]...)
 
 	return nil
 }
 
 // MovePlayer moves a player from one club to another.
-func (cs Clubs) MovePlayer(playerName, newClubName string) (*Player, error) {
+func (cs *Clubs) MovePlayer(playerName, newClubName string) (*Player, error) {
 	player, err := movePlayer(cs, newClubName, playerName)
 	if err != nil {
 		return nil, fmt.Errorf("unable to move player %q to %q: %w", playerName, newClubName, err)
@@ -119,26 +151,26 @@ func (cs Clubs) MovePlayer(playerName, newClubName string) (*Player, error) {
 	return player, nil
 }
 
-func movePlayer(clubs Clubs, newClubName, playerName string) (*Player, error) {
-	_, p := player(clubs, playerName)
+func movePlayer(cs *Clubs, newClubName, playerName string) (*Player, error) {
+	_, p := player(cs, playerName)
 	if p == nil {
 		return nil, fmt.Errorf("player %q does not exist", playerName)
 	}
 
-	club, err := clubs.Club(newClubName)
+	c, err := cs.Club(newClubName)
 	if err != nil {
 		return nil, fmt.Errorf("getting new club: %w", err)
 	}
 
-	if err := createPlayer(club, p); err != nil {
+	if err := createPlayer(cs, c, p); err != nil {
 		return nil, fmt.Errorf("creating player in new club: %w", err)
 	}
 
-	if err := removePlayer(clubs, p.Name); err != nil {
+	if err := removePlayer(cs, p.Name); err != nil {
 		return nil, fmt.Errorf("removing player from old club: %w", err)
 	}
 
-	_, p = player(clubs, p.Name)
+	_, p = player(cs, p.Name)
 	if p == nil {
 		return nil, fmt.Errorf("could not find player %q after move", p.Name)
 	}
@@ -146,7 +178,7 @@ func movePlayer(clubs Clubs, newClubName, playerName string) (*Player, error) {
 	return p, nil
 }
 
-func (cs Clubs) UpdatePlayer(p *Player) (*Player, error) {
+func (cs *Clubs) UpdatePlayer(p *Player) (*Player, error) {
 	n, fp := player(cs, p.Name)
 	if n < 0 {
 		return nil, fmt.Errorf("player %q not found", p.Name)
@@ -191,17 +223,17 @@ func updatePlayer(p *Player, up *Player) *Player {
 }
 
 // BulkUpdatePlayers creates/updates players based on data read in from a csv.
-func (cs Clubs) BulkUpdatePlayers(ps Players) error {
+func (cs *Clubs) BulkUpdatePlayers(ps Players) error {
 	return bulkUpdatePlayers(cs, ps)
 }
 
-func bulkUpdatePlayers(cs Clubs, ps Players) error {
+func bulkUpdatePlayers(cs *Clubs, ps Players) error {
 	// todo: add in moving players
 	for _, np := range ps {
 		c := maybeMakeClub(cs, np.Club)
 		n, p := player(cs, np.Name)
 		if n < 0 {
-			if err := createPlayer(c, np); err != nil {
+			if err := createPlayer(cs, c, np); err != nil {
 				return fmt.Errorf("bulk update: creating player: %w", err)
 			}
 			continue

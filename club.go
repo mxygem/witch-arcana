@@ -91,11 +91,24 @@ func (cs *Clubs) All() map[string]*Club {
 
 // Club returns a single club by name if found.
 func (cs *Clubs) Club(name string) (*Club, error) {
-	if c := club(cs.clubs, name); c != nil {
-		return c, nil
+	var c *Club
+
+	if cs.db != nil {
+		dc, err := cs.db.Get(name)
+		if err != nil {
+			return nil, fmt.Errorf("getting club: %w", err)
+		}
+		fc := dc.(*Club)
+		c = fc
+	} else {
+		lc := club(cs.clubs, name)
+		if lc == nil {
+			return nil, fmt.Errorf("no club %q found", name)
+		}
+		c = lc
 	}
 
-	return nil, fmt.Errorf("no club %q found", name)
+	return c, nil
 }
 
 func club(cs map[string]*Club, name string) *Club {
@@ -121,7 +134,18 @@ func createClub(cs *Clubs, c *Club) error {
 		return fmt.Errorf("club %q already exists", c.Name)
 	}
 
-	cs.clubs[c.Name] = c
+	if cs.db == nil {
+		cs.clubs[c.Name] = c
+		return nil
+	}
+
+	id, err := cs.db.Create(c)
+	if err != nil {
+		return fmt.Errorf("creating club: %w", err)
+	}
+
+	// return id and use to return info
+	_ = id
 
 	return nil
 }
@@ -188,7 +212,7 @@ func removeClub(cs *Clubs, name string) error {
 	return nil
 }
 
-func maybeMakeClub(cs Clubs, name string) *Club {
+func maybeMakeClub(cs *Clubs, name string) *Club {
 	c, ok := cs.clubs[name]
 	if ok {
 		return c
@@ -198,4 +222,8 @@ func maybeMakeClub(cs Clubs, name string) *Club {
 	cs.clubs[nc.Name] = nc
 
 	return nc
+}
+
+func (cs *Clubs) SetCollection(collection string) {
+	cs.db.setCollection(collection)
 }
