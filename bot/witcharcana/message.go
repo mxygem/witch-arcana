@@ -41,7 +41,7 @@ func handleMessage(cs *wa.Clubs, m string) (any, error) {
 				return nil, fmt.Errorf("getting club: %w", err)
 			}
 
-			o, err := wa.Pretty(c)
+			o, err := wa.PrettyJSON(c)
 			if err != nil {
 				return nil, fmt.Errorf("formatting data: %w", err)
 			}
@@ -69,7 +69,7 @@ func handleMessage(cs *wa.Clubs, m string) (any, error) {
 				return nil, fmt.Errorf("creating club: %w", err)
 			}
 
-			o, err := wa.Pretty(c)
+			o, err := wa.PrettyJSON(c)
 			if err != nil {
 				return nil, fmt.Errorf("formatting data: %w", err)
 			}
@@ -98,7 +98,7 @@ func handleMessage(cs *wa.Clubs, m string) (any, error) {
 				return nil, fmt.Errorf("updating club: %v", err)
 			}
 
-			o, err := wa.Pretty(nc)
+			o, err := wa.PrettyJSON(nc)
 			if err != nil {
 				return nil, fmt.Errorf("formatting data: %w", err)
 			}
@@ -154,7 +154,7 @@ func handleMessage(cs *wa.Clubs, m string) (any, error) {
 				return nil, fmt.Errorf("getting player: %v", err)
 			}
 
-			o, err := wa.Pretty(gp)
+			o, err := wa.PrettyJSON(gp)
 			if err != nil {
 				return nil, fmt.Errorf("formatting data: %w", err)
 			}
@@ -167,7 +167,7 @@ func handleMessage(cs *wa.Clubs, m string) (any, error) {
 				return nil, fmt.Errorf("creating player: %v", err)
 			}
 
-			o, err := wa.Pretty(np)
+			o, err := wa.PrettyJSON(np)
 			if err != nil {
 				return nil, fmt.Errorf("formatting data: %w", err)
 			}
@@ -181,7 +181,7 @@ func handleMessage(cs *wa.Clubs, m string) (any, error) {
 				log.Fatalf("updating player: %v", err)
 			}
 
-			o, err := wa.Pretty(up)
+			o, err := wa.PrettyJSON(up)
 			if err != nil {
 				return nil, fmt.Errorf("formatting data: %w", err)
 			}
@@ -200,7 +200,7 @@ func handleMessage(cs *wa.Clubs, m string) (any, error) {
 				log.Fatalf("moving player: %v", err)
 			}
 
-			o, err := wa.Pretty(mp)
+			o, err := wa.PrettyJSON(mp)
 			if err != nil {
 				return nil, fmt.Errorf("formatting data: %w", err)
 			}

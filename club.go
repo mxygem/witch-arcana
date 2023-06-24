@@ -7,7 +7,7 @@ import (
 
 // Clubs is a key value store of clubs with keys being the club's initials.
 type Clubs struct {
-	clubs   map[string]*Club
+	clubs   map[string]*Club `json:"clubs,omitempty"`
 	log     bool
 	dataLoc string
 }

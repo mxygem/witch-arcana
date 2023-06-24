@@ -97,13 +97,13 @@ func (cs Clubs) RemovePlayer(playerName string) error {
 	return nil
 }
 
-func removePlayer(clubs Clubs, playerName string) error {
-	pos, player := player(clubs, playerName)
+func removePlayer(cs Clubs, playerName string) error {
+	pos, player := player(cs, playerName)
 	if player == nil {
 		return fmt.Errorf("player %q does not exist", playerName)
 	}
 
-	c := club(clubs.clubs, player.Club)
+	c := club(cs.clubs, player.Club)
 	c.Players = append(c.Players[:pos], c.Players[pos+1:]...)
 
 	return nil

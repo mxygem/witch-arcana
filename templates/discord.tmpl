@@ -1,0 +1,39 @@
+==========
+{{- if . }}
+Clubs:
+    {{- range . -}}
+        {{ template "club" . -}}
+    {{ end -}}
+{{- else -}}
+No club data found!
+{{- end }}
+==========
+
+{{ define "club" }}
+    Name: {{ .Name -}}
+            {{ if .Location }}
+    Loc: {{ .Location.X }}, {{ .Location.Y -}}
+            {{ end -}}
+    {{ if .Players }}
+    {{ template "player" . -}}
+    {{- end }}
+{{- end }}
+
+{{- define "player" -}}
+    Players:
+{{- range $i, $player := .Players }}
+        Name: {{ .Name -}}
+{{- if .Location }}
+            {{- if .Location }}
+            Loc: {{ .Location.X }}, {{ .Location.Y -}}
+            {{ end -}}
+            {{ if gt .Level  0 }}
+            Level: {{ .Level -}}
+            {{ end -}}
+            {{ if gt .Might 0 }}
+            Might: {{ .Might -}}
+            {{ end }}
+            In Hive: {{ .InHive -}}
+{{ end -}}
+{{ end -}}
+{{ end }}

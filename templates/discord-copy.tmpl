@@ -1,0 +1,11 @@
+{{ range . }}
+    Name: {{ .Name }}
+    {{ if .Location }}
+    Loc: {{ .Location.X }}, {{ .Location.Y }}
+    {{end}}
+    {{ if .Players }}
+        {{ range $i, $player := .Players }}
+            Name: {{ .Name }}
+        {{end}}
+    {{end}}
+{{end}}
